@@ -12,21 +12,26 @@ def setup_ui():
 
         with gr.Row() as Fx:
             enable = gr.Checkbox(label="Enable")
-            iterations = gr.Slider(label="Steps", minimum=1, maximum=32, step=1, value=6)
+            iterations = gr.Slider(label="Steps", minimum=1, maximum=64, step=1, value=16)
 
         with gr.Row() as BnC:
-            offset = gr.Slider(label="Brightness", minimum=-64, maximum=64, step=1, value=4)
-            bound = gr.Slider(label="Contrast", minimum=0, maximum=32, step=1, value=2)
-            saturation = gr.Slider(label="Saturation", minimum=0.0, maximum=2.0, step=0.1, value=1.2)
+            offset = gr.Slider(label="Brightness", minimum=-32, maximum=32, step=0.1, value=0.25)
+            bound = gr.Slider(label="Contrast", minimum=-16, maximum=16, step=0.1, value=0.25)
+            saturation = gr.Slider(label="Saturation", minimum=0.0, maximum=2.0, step=0.01, value=1.2)
 
         with gr.Accordion("Advanced Settings", open=False):
-            debug = gr.Checkbox(label="Debug")
+            debug = gr.Checkbox(label="Debug", value=False)
+
+            with gr.Row() as CBs:
+                power = gr.Checkbox(label="Power", value=False)
+                bloom = gr.Checkbox(label="Bloom", value=False)
+                grey = gr.Checkbox(label="Grey", value=False)
 
             with gr.Row() as Adv:
-                sigma = gr.Slider(label="Sigma",minimum=0,maximum=4,step=0.01,value=1.0)
+                sigma = gr.Slider(label="Sigma",minimum=0,maximum=2,step=0.01,value=1.0)
                 strength = gr.Slider(label="Blur",minimum=1,maximum=64,step=1,value=16)
 
-    return [enable, iterations, offset, bound, saturation, debug, sigma, strength]
+    return [enable, iterations, offset, bound, saturation, debug, power, bloom, grey, sigma, strength]
 
 def calculate_luma(input_array, strength):
     luma_array = np.dot(input_array, [0.2126, 0.7152, 0.0722])
@@ -38,28 +43,38 @@ def lerp_array(input_array, new_min, new_max):
 
     return np.interp(input_array, (old_min, old_max), (new_min, new_max))
 
-def generate_noise(luma_map, sigma):
-    r = np.random.normal(loc=luma_map, scale=sigma)
-    g = np.random.normal(loc=luma_map, scale=sigma)
-    b = np.random.normal(loc=luma_map, scale=sigma)
-
-    return np.stack((r, g, b), axis=2)
-
-def modify_saturation(input_image, saturation_factor):
+def modify_saturation(input_image, saturation_factor, power):
     hsv_image = input_image.convert("HSV")
     h, s, v = hsv_image.split()
     
     s_array = np.array(s)
-    s_array = np.clip(s_array * saturation_factor, 0, 255)
+
+    if power:
+        s_array = np.clip(np.power(s_array, saturation_factor), 0, 255)
+    else:
+        s_array = np.clip(s_array * saturation_factor, 0, 255)
+
     modified_s = to_image(s_array)
     
     modified_hsv_image = Image.merge("HSV", (h, modified_s, v))
     return modified_hsv_image.convert("RGB")
 
+def generate_noise(luma_map, sigma, greyscale):
+    r = np.random.normal(loc=luma_map, scale=sigma)
+
+    if greyscale:
+        g = r
+        b = r
+    else:
+        g = np.random.normal(loc=luma_map, scale=sigma)
+        b = np.random.normal(loc=luma_map, scale=sigma)
+
+    return np.stack((r, g, b), axis=2)
+
 def generate_debug_grid(og_image, luma_image, noise_image):
-    caption1 = "Original Image"
-    caption2 = "Luma Map"
-    caption3 = "Input Image"
+    caption1 = "Original Input"
+    caption2 = "Luminance  Map"
+    caption3 = "Modified Input"
 
     caption_bar = 64
 

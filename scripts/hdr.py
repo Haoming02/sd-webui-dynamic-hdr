@@ -22,7 +22,7 @@ class DynamicHDR(scripts.Script):
 
         return setup_ui()
 
-    def process(self, p, enable:bool, iterations:int, offset:int, bound:int, saturation:float, debug:bool, sigma:float, strength:int):
+    def process(self, p, enable:bool, iterations:int, offset:int, bound:int, saturation:float, debug:bool, power:bool, bloom:bool, grey:bool, sigma:float, strength:int):
         self.grid = None
         if not enable:
             return p
@@ -32,12 +32,15 @@ class DynamicHDR(scripts.Script):
 
         luma_array = calculate_luma(input_array, strength)
 
-        luma_map_array = lerp_array(luma_array, -bound + offset, bound + offset)
+        if bloom:
+            luma_map_array = lerp_array(luma_array, offset, bound + offset)
+        else:
+            luma_map_array = lerp_array(luma_array, -bound + offset, bound + offset)
 
-        output_array = np.array(modify_saturation(input_image, saturation))
+        output_array = np.array(modify_saturation(input_image, saturation, power))
 
         for i in range(iterations):
-            noise_array = generate_noise(luma_map_array, sigma)
+            noise_array = generate_noise(luma_map_array, sigma, grey)
             output_array = output_array + noise_array
 
         p.init_images[0] = to_image(np.clip(output_array, 0, 255))
