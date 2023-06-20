@@ -22,10 +22,13 @@ class DynamicHDR(scripts.Script):
 
         return setup_ui()
 
-    def process(self, p, enable:bool, iterations:int, offset:int, bound:int, saturation:float, debug:bool, power:bool, bloom:bool, grey:bool, sigma:float, strength:int):
+    def process(self, p, enable:bool, iterations:int, offset:float, bound:float, saturation:float, debug:bool, power:bool, bloom:bool, grey:bool, sigma:float, strength:int):
         self.grid = None
         if not enable:
             return p
+
+        offset /= iterations
+        bound /= iterations
 
         input_image = p.init_images[0]
         input_array = np.array(input_image)

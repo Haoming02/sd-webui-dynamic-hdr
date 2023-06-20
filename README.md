@@ -1,7 +1,11 @@
+<h1 align="center">No Longer Maintained</h1>
+<p align="center">Please check out the new and improved <a href = "https://github.com/Haoming02/sd-webui-vectorscope-cc">Vectorscope CC</a>!</p>
+<p align="center">This repo will no longer receive updates...</p>
+
+<hr>
+
 # SD Webui Dynamic HDR
 This is an Extension for the [Automatic1111 Webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui), which *tries to* enhance the **img2img** upscale quality.
-
-**Note:** If you're updating this Extension, open `ui-config.json` and delete all entries from `hdr.py` *(should be near the bottom)* for the new values to update.
 
 ## What is This ?
 I came up with a ~~convoluted~~ way to *slightly* enhances the **img2img** process 
@@ -27,7 +31,7 @@ Refer to the table below and play around with the values.
 - **Blur:** How strong should the luminance map be blurred
 - **Debug:** When enabled, attach the intermediate steps to output
 
-## (Old) Samples
+## Sample Images
 > Base Image 512x512; img2img to 1024x1024; Same prompts; Same seed; Same settings
 
 <table>
@@ -127,8 +131,6 @@ The saturation of the input image is modified. And a noise map controlled by `Si
 The noise map is finally applied to the input image for specified `Steps`.
 
 </details>
-
-<hr>
 
 [^1]: Yes. I know the actual Stable Diffusion pipeline works with the noise in the latent space. This Extension works entirely in the normal pixel space.
 And thus, this Extension has **nothing** to do with [Offset Noise](https://www.crosslabs.org/blog/diffusion-with-offset-noise).
